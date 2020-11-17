@@ -1,97 +1,132 @@
 import React, { Component } from 'react';
 import '../css/App.css';
 
-import AddAppointments from './AddAppointments';
-import SearchAppointments from './SearchAppointments';
-import ListAppointments from './ListAppointments';
-import { without, findIndex } from 'lodash';
+import AddTasks from './AddTasks.js';
+import SearchTasks from './SearchTasks';
+import ListTasks from './ListTasks';
+
+import { without } from 'lodash';
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
-      myAppointments: [],
+      myTodoItems: [],
       formDisplay: false,
-      orderBy: 'petName',
+      editDisplay: false,
+      orderBy: 'itemName',
       orderDir: 'asc',
       queryText: '',
-      lastIndex: 0,
+      status: '',
+      lastIndex: 0
     };
-    this.deleteAppointment = this.deleteAppointment.bind(this);
-    // this.toggleForm = this.toggleForm.bind(this);
+    this.deleteTaskItem = this.deleteTaskItem.bind(this);
+    this.toggleForm = this.toggleForm.bind(this);
+    this.toggleEdit = this.toggleEdit.bind(this);
+    this.addTask = this.addTask.bind(this);
+    this.changeOrder = this.changeOrder.bind(this);
+    this.searchTasks = this.searchTasks.bind(this);
+    this.editTask = this.editTask.bind(this);
   }
 
-  // toggleForm() {
-  //   this.setState({ formDisplay: !this.state.formDisplay });
-  // }
 
-  updateInfo = (name, value, id) => {
-    let tempApts = this.state.myAppointments;
-    let aptIndex = findIndex(this.state.myAppointments, {
-      aptId: id,
-    });
-    tempApts[aptIndex][name] = value;
+  handleEdit = (e, updateTask) => {
+    e.preventDefault();
+    let tempTaskArray = this.state.myTodoItems;
+    tempTaskArray = tempTaskArray.map(item => {
+      if (item.taskId === updateTask.taskId) {
+        return {
+          ...updateTask, editMode: false
+        }        
+      }
+      return item;
+    })
     this.setState({
-      myAppointments: tempApts,
+      myTodoItems: tempTaskArray
+    })
+  }  
+
+  toggleForm() {
+    this.setState({
+      formDisplay: !this.state.formDisplay
     });
-  };
+  }
 
-  searchApts = (query) => {
+  editTask(name, e, taskID) {
+    e.preventDefault();
+    console.log(name + ': ' + e.target.innerText);
+  }
+
+  toggleEdit(taskId) {
+    let tempTaskArray = this.state.myTodoItems;
+    tempTaskArray = tempTaskArray.map(item => {
+      if (item.taskId === taskId) {
+        let tempTask = {...item, editMode: !item.editMode}
+        return {...tempTask}
+      }
+      return item
+    })
+    this.setState({
+      myTodoItems: tempTaskArray
+    });
+  }
+
+  searchTasks(query) {
     this.setState({ queryText: query });
-  };
+  }
 
-  changeOrder = (order, dir) => {
+  changeOrder(order, dir) {
     this.setState({
       orderBy: order,
-      orderDir: dir,
+      orderDir: dir
     });
-  };
+  }
 
-  addAppointment = (appt) => {
-    let tempApt = this.state.myAppointments;
-    appt.aptId = this.state.lastIndex;
-    tempApt.unshift(appt);
+  addTask(task) {
+    console.log('In add task: ', task)
+    let tempTasks = this.state.myTodoItems;
+    task.taskId = this.state.lastIndex;
+    tempTasks.unshift(task);
     this.setState({
-      myAppointments: tempApt,
-      lastIndex: this.state.lastIndex + 1,
+      myTodoItems: tempTasks,
+      lastIndex: this.state.lastIndex + 1
     });
-  };
+  }
 
-  toggleForm = () => {
-    this.setState({ formDisplay: !this.state.formDisplay });
-  };
+  deleteTaskItem(task) {
+    let tempTasks = this.state.myTodoItems;
+    tempTasks = without(tempTasks, task);
 
-  deleteAppointment(apt) {
-    let tempApts = this.state.myAppointments;
-    tempApts = without(tempApts, apt);
-
-    this.setState({ myAppointments: tempApts });
+    this.setState({
+      myTodoItems: tempTasks
+    });
   }
 
   componentDidMount() {
     fetch('./data.json')
-      .then((response) => response.json())
-      .then((result) => {
-        const apts = result.map((item) => {
-          item.aptId = this.state.lastIndex;
+      .then(response => response.json())
+      .then(result => {
+        const tasks = result.map(item => {
+          item.taskId = this.state.lastIndex;
           this.setState({ lastIndex: this.state.lastIndex + 1 });
           return item;
         });
         this.setState({
-          myAppointments: apts,
+          myTodoItems: tasks
         });
       });
   }
+
   render() {
     let order;
-    let filteredApts = this.state.myAppointments;
+    let filteredTasks = this.state.myTodoItems;
     if (this.state.orderDir === 'asc') {
       order = 1;
     } else {
       order = -1;
     }
 
-    filteredApts = filteredApts
+    filteredTasks = filteredTasks
       .sort((a, b) => {
         if (
           a[this.state.orderBy].toLowerCase() <
@@ -102,15 +137,9 @@ class App extends Component {
           return 1 * order;
         }
       })
-      .filter((eachItem) => {
+      .filter(eachItem => {
         return (
-          eachItem['petName']
-            .toLowerCase()
-            .includes(this.state.queryText.toLowerCase()) ||
-          eachItem['ownerName']
-            .toLowerCase()
-            .includes(this.state.queryText.toLowerCase()) ||
-          eachItem['aptNotes']
+          eachItem['itemName']
             .toLowerCase()
             .includes(this.state.queryText.toLowerCase())
         );
@@ -122,21 +151,26 @@ class App extends Component {
           <div className="row">
             <div className="col-md-12 bg-white">
               <div className="container">
-                <AddAppointments
+                <AddTasks
                   formDisplay={this.state.formDisplay}
                   toggleForm={this.toggleForm}
-                  addAppointment={this.addAppointment}
+                  addTask={this.addTask}
                 />
-                <SearchAppointments
+                <SearchTasks
                   orderBy={this.state.orderBy}
                   orderDir={this.state.orderDir}
                   changeOrder={this.changeOrder}
-                  searchApts={this.searchApts}
+                  searchTasks={this.searchTasks}
+                  tasks={filteredTasks}
                 />
-                <ListAppointments
-                  appointments={filteredApts}
-                  deleteAppointment={this.deleteAppointment}
-                  updateInfo={this.updateInfo}
+                <ListTasks
+                  tasks={filteredTasks}
+                  deleteTaskItem={this.deleteTaskItem}
+                  saveEditTask={this.saveEditTask}
+                  toggleEdit={this.toggleEdit}
+                  editDisplay={this.state.editDisplay}
+                  editTask={this.editTask}
+                  handleEdit={this.handleEdit}
                 />
               </div>
             </div>

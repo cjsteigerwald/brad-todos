@@ -1,4 +1,4 @@
-.add-appointment .card-body {
+.add-task .card-body {
   display: none;
 }
 
@@ -7,35 +7,35 @@
   user-select: none;
 }
 
-.appointment-list {
+.task-list {
   font-size: 1.1em;
 }
 
-.appointment-list .pet-item {
+.task-list .task-item {
   border-bottom: 1px dotted gray;
 }
 
-.appointment-list .pet-item:last-child {
+.task-list .task-item:last-child {
   border-bottom: none;
 }
 
-.appointment-list .pet-name {
+.task-list .task-name {
   font-weight: 600;
   color: #337ab7;
   font-size: 1.3em;
   line-height: 100%;
 }
 
-.appointment-list .label-item {
+.tasl-list .label-item {
   font-weight: 600;
   color: #667b82;
 }
 
-.appointment-list .apt-date {
+.task-list .apt-date {
   font-style: italic;
 }
 
-.appointment-list .apt-notes {
+.task-list .completed-date {
   line-height: 120%;
 }
 
